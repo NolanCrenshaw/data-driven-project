@@ -6,7 +6,7 @@
         $ mkdir data-driven-project
         $ git init
         $ touch .gitignore
-*Added "node_modules/" to .gitignore*
+*Add "node_modules/" to .gitignore*
 
         $ npm init -y
         $ npm install express@^4.0.0 pug@^2.0.0
@@ -436,7 +436,7 @@ module.exports = {
 ##### seed database
         $ npx dotenv sequelize db:seed:all
 
-### Rendering Database
+### Rendering Using the Database
 
 ##### update 'routes' module 
 ```js
@@ -459,8 +459,66 @@ module.exports = router;
 ```
 ##### update './views/index.pug' to render the array of book objects
 ```pug
+extends layout.pug
 
+block content
+  p Hello from the Reading List App!
+  h3 Books
+  ul
+    each book in books
+      li= book.title
 ```
+### Utilizing Sequelize
+
+##### rename 'views/index.pug' to 'views/book-list.pug'
+        $ mv views/index.pug views/book-list.pug
+##### update res.render() route in 'routes' module
+        res.render('book-list', { title: 'Books', books });
+
+##### applying Bootstrap styles in 'views/book-list.pug'
+*See ./views/book-list.pug for code*
+
+##### update 'routes' module to use async route handler function
+```js
+const asyncHandler = (handler) => (req, res, next) => handler(req, res, next).catch(next);
+
+router.get('/', asyncHandler(async (req, res) => {
+    const books = await db.Book.findAll({ order: [['title', 'ASC'] ]});
+    res.render('book-list', { title: 'Books', books });
+}));
+```
+##### add csrfToken dependencies
+        $ npm install csurf@^1.0.0
+        $ npm install cookie-parser@^1.0.0
+##### configure 'app' module to use csurf middleware
+```js
+const cookieParser = require('cookie-parser');
+
+app.use(cookieParser());
+app.use(express.urlencoded({ extended: false }));
+```
+### create Add Book page
+
+##### config 'routes' module to import and utilize csurf
+```js
+const csrf = require('csurf');
+
+const csrfProtection = csrf({ cookie: true });
+```
+
+##### add new Add Book routes to 'routes' module
+*See 'routes.js' to evaluate new code. Consists of route.get() and route.post() routing to '/book/add'.*
+
+##### create 'book-add.pug' to 'views' subdirectory
+        $ touch views/book-add.pug
+##### add initial contents to 'views/book-add.pug'
+*See 'views/book-add.pug' to evaluate code.*
+
+
+
+
+
+
 
 
 

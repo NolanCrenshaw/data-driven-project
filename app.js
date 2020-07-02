@@ -1,6 +1,7 @@
 // external import statements
 const express = require('express');
 const morgan = require('morgan');
+const cookieParser = require('cookie-parser');
 
 // internal import statements
 const routes = require('./routes');
@@ -13,7 +14,10 @@ app.set('view engine', 'pug');
 
 // app-global modules applied
 app.use(morgan('dev'));
+app.use(cookieParser());
+app.use(express.urlencoded({ extended: false }));
 app.use(routes);
+
 // custom error handler
 app.use((req, res, next) => {
     const err = new Error('The requested page could not be found.');

@@ -1,0 +1,27 @@
+extends layout.pug
+
+block content
+  if error
+    div(class='alert alert-danger' role='alert')
+      p The following error(s) occurred:
+      pre= JSON.stringify(error, null, 2)
+  form(action='/book/add' method='post')
+    input(type='hidden' name='_csrf' value=csrfToken)
+    div(class='form-group')
+      label(for='title') Title
+      input(type='text' id='title' name='title' value=book.title class='form-control')
+    div(class='form-group')
+      label(for='author') Author
+      input(type='text' id='author' name='author' value=book.author class='form-control')
+    div(class='form-group')
+      label(for='releaseDate') Release Date
+      input(type='text' id='releaseDate' name='releaseDate' value=book.releaseDate class='form-control')
+    div(class='form-group')
+      label(for='pageCount') Page Count
+      input(type='text' id='pageCount' name='pageCount' value=book.pageCount class='form-control')
+    div(class='form-group')
+      label(for='publisher') Publisher
+      input(type='text' id='publisher' name='publisher' value=book.publisher class='form-control')
+    div(class='py-4')
+      button(type='submit' class='btn btn-primary') Add Book
+      a(href='/' class='btn btn-warning ml-2') Cancel
