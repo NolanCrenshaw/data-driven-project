@@ -41,7 +41,7 @@ const port = 8080;
 app.listen(port, () => console.log(`Listening on port: ${port}...`));
 ```
 
-##### create sub directory 'views'
+##### create subdirectory 'views'
         $ mkdir views
         $ touch views/layout.pug
         $ touch views/index.pug
@@ -81,7 +81,7 @@ block content
 ##### reconfigure app module
 *Replace port declaration and 'app.listen()' with 'module.exports' statement to export the 'app' object.*
 
-##### create sub directory 'bin'
+##### create subdirectory 'bin'
         $ mkdir bin
         $ touch bin/www
 *IMPORTANT - do not add a file extension to 'www'.*
@@ -184,7 +184,7 @@ block content
 
 ------------
 
-### Database Setup
+### Pre-Database Package Setup
 
 *The package 'per-env' allows npm to utilize scripts on a per-environment basis by a slight modification to the package.json "script:" object.*
 *The package 'dotenv' and its command line package 'dotenv-cli' add the project access to '.env' files that define your environment variables and can be imported by the project. The command line package serves as an intermediary between your database management package and the environment controls.*
@@ -224,10 +224,30 @@ app.listen(port, () => console.log(`Listening on port: ${port}...`));
 ```json
   "scripts": {
     "start": "per-env",
-    "start:development": "nodemon -r dotenv/config .bin/www",
-    "start:production": "node .bin/www"
+    "start:development": "nodemon -r dotenv/config ./bin/www",
+    "start:production": "node ./bin/www"
   },
 ```
 
+##### configure VSCode debug
+*If there is no '.vscode' directory with a 'launch.json' file, simply open VSCode's debugger extension and select the option to create that subdirectory.*
+##### configure the 'launch.json' file inside the .vscode subdirectory
+```json
+"version": "0.2.0",
+"configurations": [
+    {
+        "type": "node",
+        "request": "launch",
+        "name": "Launch Program",
+        "skipFiles": [
+            "<node_internals>/**"
+        ],
+        "program": "${workspaceFolder}/bin/www",
+        "envFile": "${workspaceFolder}/.env"
+    }
+]
+```
 
+##### setup bootstrap
+*See 'layout.pug' file for bootstrap implementation example. Meta tags, classes, and script tags are applied where needed. See BootStrap documentation for reference*
 
