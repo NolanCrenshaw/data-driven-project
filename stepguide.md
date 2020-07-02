@@ -7,13 +7,14 @@
         $ git init
         $ touch .gitignore
 *Added "node_modules/" to .gitignore*
+
         $ npm init -y
         $ npm install express@^4.0.0 pug@^2.0.0
         $ npm install nodemon@^2.0.0 --save-dev
         
 ##### setup route module       
         $ touch routes.js
-###### initial contents:
+###### initial 'routes.js' contents:
 ```js
 const express = require('express');
 const router = express.Router();
@@ -21,13 +22,13 @@ const router = express.Router();
 router.get('/', (req, res) => {
     res.render('index', { title: 'Home' });
 });
-```
 
 module.exports = router;
+```
 
 ##### setup app module
         $ touch app.js
-###### initial contents:
+###### initial 'app.js' contents:
 ```js
 const express = require('express');
 const routes = require('./routes');
@@ -85,7 +86,7 @@ block content
         $ mkdir bin
         $ touch bin/www
 *IMPORTANT - do not add a file extension to 'www'.*
-        ###### 'www' initial contents:
+###### initial 'www' contents:
 ```js
 #!/usr/bin/env node
 
@@ -105,7 +106,7 @@ app.listen(port, () => console.log(`Listening on port: ${port}...`));
 
 ------------
 
-*Using the 'Morgan' HTTP request logger*
+### Using the 'Morgan' HTTP request logger
 
 ##### install 'morgan'
         $ npm install morgan
@@ -115,6 +116,8 @@ const morgan = require('morgan');
 app.use(morgan('dev'));
 ```
 ------------
+
+### Custom Error Handling
 
 ##### create middleware error catch function in 'app' module
 ```js
@@ -162,7 +165,7 @@ app.use((err, req, res, next) => {
 ##### add pug files to be referenced by error handlers
         $ touch views/error.pug
         $ touch views/page-not-found.pug
-###### initial error.pug contents:
+###### initial 'error.pug' contents:
 ```pug
 extends layout.pug
 
@@ -173,7 +176,7 @@ block content
     h3 Stack Trace
     pre= stack
 ```
-###### initial page-not-found.pug contents:
+###### initial 'page-not-found.pug' contents:
 ```pug
 extends layout.pug
 
@@ -197,7 +200,7 @@ block content
 ##### create necessary '.env' files to reference
         $ touch .env
         $ touch .env.example
-###### initial contents:
+###### initial '.env' contents:
 ```env
 PORT=8080
 ```
@@ -205,7 +208,7 @@ PORT=8080
 ##### create 'config' module
         $ mkdir config
         $ touch config/index.js
-###### initial 'index.js' content:
+###### initial 'config/index.js' content:
 ```js
 module.exports = {
     environment: process.env.NODE_ENV || 'development',
@@ -280,7 +283,7 @@ module.exports = {
         sudo=# CREATE DATABASE reading_list;
         sudo=# CREATE USER reading_list_app WITH ENCRYPTED PASSWORD 'password';
         sudo=# GRANT ALL PRIVILEGES ON DATABASE reading_list TO reading_list_app;
-##### update .env and .env example files with database information
+##### update '.env' and '.env example' files with database information
 ```env
 PORT=8080
 DB_USERNAME=reading_list_app
@@ -288,7 +291,7 @@ DB_PASSWORD=password
 DB_DATABASE=reading_list
 DB_HOST=localhost
 ```
-##### update config module at config/index.js
+##### update config module at 'config/index.js'
 ```js
 module.exports = {
     environment: process.env.NODE_ENV || 'development',
@@ -301,7 +304,7 @@ module.exports = {
     },
 };
 ```
-##### configure the sequelize database connection at config/database.js
+##### configure the sequelize database connection at 'config/database.js'
 ```js
 const {
   username,
@@ -339,6 +342,125 @@ db.sequelize.authenticate()
 ```
 -----------
 
+### Creating the Content Models
+
+##### npx model generation
+        $ npx sequelize model:generate \
+        --name Book \
+        --attributes "title:string,author:string,releaseDate:dateonly,pageCount:integer,publisher:string"
+##### update model and migration files
+```js
+//- db/models/book.js
+'use strict';
+module.exports = (sequelize, DataTypes) => {
+  const Book = sequelize.define('Book', {
+    title: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    author: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    releaseDate: {
+      type: DataTypes.DATEONLY,
+      allowNull: false
+    },
+    pageCount: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
+    publisher: {
+      type: DataTypes.STRING,
+      allowNull: false
+    }
+  }, {});
+  Book.associate = function(models) {
+    // associations can be defined here
+  };
+  return Book;
+};
+
+//- db/migrations/xxxx-create-book.js
+'use strict';
+module.exports = {
+  up: (queryInterface, Sequelize) => {
+    return queryInterface.createTable('Books', {
+      id: {
+        allowNull: false,
+        autoIncrement: true,
+        primaryKey: true,
+        type: Sequelize.INTEGER
+      },
+      title: {
+        type: Sequelize.STRING,
+        allowNull: false
+      },
+      author: {
+        type: Sequelize.STRING(100),
+        allowNull: false
+      },
+      releaseDate: {
+        type: Sequelize.DATEONLY,
+        allowNull: false
+      },
+      pageCount: {
+        type: Sequelize.INTEGER,
+        allowNull: false
+      },
+      publisher: {
+        type: Sequelize.STRING(100),
+        allowNull: false
+      },
+      createdAt: {
+        allowNull: false,
+        type: Sequelize.DATE
+      },
+      updatedAt: {
+        allowNull: false,
+        type: Sequelize.DATE
+      }
+    });
+  },
+  down: (queryInterface, Sequelize) => {
+    return queryInterface.dropTable('Books');
+  }
+};
+```
+##### apply the migration
+        $ npx dotenv sequelize db:migrate
+##### generate the seeder file
+        $ npx sequelize seed:generate --name test-data
+##### replace contents of seeder file
+*See example file in 'db/seeders' for code*
+##### seed database
+        $ npx dotenv sequelize db:seed:all
+
+### Rendering Database
+
+##### update 'routes' module 
+```js
+const express = require('express');
+
+const db = require('./db/models');
+
+const router = express.Router();
+
+router.get('/', async (req, res, next) => {
+    try {
+        const books = await db.Book.findAll({ order: [['title', 'ASC'] ]});
+        res.render('index', { title: 'Home', books });
+    } catch (err) {
+        next(err);
+    }
+});
+
+module.exports = router;
+```
+##### update './views/index.pug' to render the array of book objects
+```pug
+
+```
 
 
 
