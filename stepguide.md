@@ -66,7 +66,7 @@ block content
 ```
 
 ##### edit 'package.json' to replace placeholder npm test script
-```js
+```json
 "scripts": {
     "start": "nodemon app.js"
 },
@@ -96,7 +96,7 @@ app.listen(port, () => console.log(`Listening on port: ${port}...`));
 ```
 
 ##### update 'package.json' start script to target './bin/www'
-```js
+```json
 "scripts": {
     "start": "nodemon ./bin/www"
 },
@@ -184,5 +184,50 @@ block content
 
 ------------
 
-#### Database Setup
+### Database Setup
+
+*The package 'per-env' allows npm to utilize scripts on a per-environment basis by a slight modification to the package.json "script:" object.*
+*The package 'dotenv' and its command line package 'dotenv-cli' add the project access to '.env' files that define your environment variables and can be imported by the project. The command line package serves as an intermediary between your database management package and the environment controls.*
+
+##### install per-env
+        $ npm install per-env
+        $ npm install dotenv dotenv-cli --save-dev
+*The '--save-dev' is crucial here, as it is with the 'nodemon' package. This ensures that the package is deployed specifically to a development environment and will not interfere with the eventual deployment environment.*
+
+##### create necessary '.env' files to reference
+        $ touch .env
+        $ touch .env.example
+###### initial contents:
+```env
+PORT=8080
+```
+*IMPORTANT - Add '.env' files to .gitignore, as they often contain sensitive information.*
+##### create 'config' module
+        $ mkdir config
+        $ touch config/index.js
+###### initial 'index.js' content:
+```js
+module.exports = {
+    environment: process.env.NODE_ENV || 'development',
+    port: process.env.PORT || 8080,
+};
+```
+##### update '.bin/www' to get port from the 'config' module
+```js
+#!/usr/bin/env node
+const { port } = require('../config');
+const app = require('../app');
+
+app.listen(port, () => console.log(`Listening on port: ${port}...`));
+```
+##### update 'package.json' npm start script
+```json
+  "scripts": {
+    "start": "per-env",
+    "start:development": "nodemon -r dotenv/config .bin/www",
+    "start:production": "node .bin/www"
+  },
+```
+
+
 
