@@ -249,5 +249,96 @@ app.listen(port, () => console.log(`Listening on port: ${port}...`));
 ```
 
 ##### setup bootstrap
-*See 'layout.pug' file for bootstrap implementation example. Meta tags, classes, and script tags are applied where needed. See BootStrap documentation for reference*
+*See 'layout.pug' file for bootstrap implementation example. Meta tags, classes, and script tags are applied where needed. See BootStrap documentation for reference.*
+
+---------------
+
+### Applying the Database Structure
+
+*Using PostgreSQL and Sequelize*
+
+##### install dependencies:
+        $ npm install sequelize@^5.0.0 pg@^8.0.0
+        $ npm install sequelize-cli@^5.0.0 --save-dev
+##### configure sequelize-cli
+        $ touch .sequelizerc
+##### initial contents of '.sequelizerc'
+```js
+const path = require('path');
+
+module.exports = {
+    'config': path.resolve('config', 'database.js'),
+    'models-path': path.resolve('db', 'models'),
+    'seeders-path': path.resolve('db', 'seeders'),
+    'migrations-path': path.resolve('db', 'migrations')
+};
+```
+##### initialize sequelize
+        $ npx sequelize init
+##### create new database and database user for project
+        $ psql
+        sudo=# CREATE DATABASE reading_list;
+        sudo=# CREATE USER reading_list_app WITH ENCRYPTED PASSWORD 'password';
+        sudo=# GRANT ALL PRIVILEGES ON DATABASE reading_list TO reading_list_app;
+##### update .env and .env example files with database information
+```env
+PORT=8080
+DB_USERNAME=reading_list_app
+DB_PASSWORD=password
+DB_DATABASE=reading_list
+DB_HOST=localhost
+```
+##### update config module at config/index.js
+```js
+module.exports = {
+    environment: process.env.NODE_ENV || 'development',
+    port: process.env.PORT || 8080,
+    db: {
+        username: process.env.DB_USERNAME,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_DATABASE,
+        host: process.env.DB_HOST,
+    },
+};
+```
+##### configure the sequelize database connection at config/database.js
+```js
+const {
+  username,
+  password,
+  database,
+  host,
+} = require('./index').db;
+
+module.exports = {
+  development: {
+    username,
+    password,
+    database,
+    host,
+    dialect: 'postgres',
+  },
+};
+```
+##### configure 'bin/www' to test the database connection on start
+```js
+#!/usr/bin/env node
+const { port } = require('../config');
+const app = require('../app');
+const db = require('../db/models');
+
+db.sequelize.authenticate()
+    .then(() => {
+        console.log('Database connection success! Sequelize is ready to use...');
+        app.listen(port, () => console.log(`Listening on port: ${port}...`));
+    })
+    .catch((err) => {
+        console.log('Database connection failure.')
+        console.error(err);
+    });
+```
+-----------
+
+
+
 
