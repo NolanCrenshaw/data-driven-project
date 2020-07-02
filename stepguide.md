@@ -175,7 +175,7 @@ block content
 ```pug
 extends layout.pug
 
-block contents
+block content
   div
     p Sorry, we couldn't find the page that your requested.
 ```
