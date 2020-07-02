@@ -1,4 +1,6 @@
-### Data Driven Project Guide
+# Data Driven Project Guide
+
+### Initial Steps
 
 ##### setup directory
         $ mkdir data-driven-project
@@ -179,3 +181,8 @@ block content
   div
     p Sorry, we couldn't find the page that your requested.
 ```
+
+------------
+
+#### Database Setup
+
